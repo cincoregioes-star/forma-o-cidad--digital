@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07101d">
+  <meta name="description" content="Painel administrativo do Projeto Formação Cidadã Digital.">
+  <title>Formação Cidadã | Gestão Municipal</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="assets/css/admin.css">
+
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script defer src="assets/js/config.js"></script>
+  <script defer src="assets/js/demo-data.js"></script>
+  <script defer src="assets/js/import-tools.js"></script>
+  <script defer src="assets/js/admin.js"></script>
+</head>
+<body>
+  <noscript>Ative o JavaScript para utilizar esta plataforma.</noscript>
+
+  <section id="loginScreen" class="login-shell">
+    <div class="login-visual">
+      <div class="brand-lockup"><span class="brand-symbol">FC</span><span>Formação Cidadã</span></div>
+      <div class="login-copy">
+        <span class="eyebrow">GESTÃO MUNICIPAL • ÁREA RESTRITA</span>
+        <h1>Uma visão clara da aplicação em toda a rede.</h1>
+        <p>Centralize cobertura, participação, desempenho, comparação entre unidades e códigos individuais dos estudantes.</p>
+        <div class="login-points">
+          <span><i></i>Cobertura territorial</span>
+          <span><i></i>Diagnóstico consolidado</span>
+          <span><i></i>Gestão de códigos</span>
+        </div>
+      </div>
+      <small>Projeto Formação Cidadã Digital • Painel administrativo</small>
+    </div>
+
+    <div class="login-form-area">
+      <div class="login-card">
+        <span class="chip chip-neutral">ACESSO ADMINISTRATIVO</span>
+        <h2>Entrar no painel</h2>
+        <p>Use sua credencial de administrador.</p>
+        <label class="field"><span>E-mail</span><input id="adminEmail" type="email" autocomplete="username" placeholder="administrador@exemplo.com"></label>
+        <label class="field"><span>Senha</span><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha"></label>
+        <button id="adminLoginBtn" class="btn btn-primary btn-block">Acessar gestão</button>
+        <p id="adminMessage" class="form-message"></p>
+        <div class="demo-box"><strong>Demonstração</strong><span>admin@formacaocidada.local</span><span>Demo@2026</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="adminApp" class="admin-shell hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand"><span class="brand-symbol">FC</span><div><strong>Formação Cidadã</strong><small>Gestão municipal</small></div></div>
+      <nav class="sidebar-nav" aria-label="Navegação administrativa">
+        <button class="nav-link active" data-section="overview"><span class="nav-glyph">⌂</span><span>Visão municipal</span></button>
+        <button class="nav-link" data-section="coverage"><span class="nav-glyph">⌖</span><span>Cobertura</span></button>
+        <button class="nav-link" data-section="comparison"><span class="nav-glyph">⇄</span><span>Comparar escolas</span></button>
+        <button class="nav-link" data-section="data"><span class="nav-glyph">⇧</span><span>Dados da rede</span></button>
+        <button class="nav-link" data-section="codes"><span class="nav-glyph">#</span><span>Códigos dos alunos</span></button>
+        <button class="nav-link" data-section="diagnostics"><span class="nav-glyph">◎</span><span>Diagnósticos</span></button>
+        <button class="nav-link" data-section="results"><span class="nav-glyph">≡</span><span>Resultados</span></button>
+        <button class="nav-link" data-section="reports"><span class="nav-glyph">↗</span><span>Relatórios</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="backendStatus" class="backend-pill">Modo demonstração</span>
+        <small>v1.3 • Administração</small>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menuBtn" class="icon-btn mobile-only" aria-label="Abrir menu">☰</button>
+          <div><span id="sectionEyebrow" class="eyebrow">VISÃO MUNICIPAL</span><h2 id="sectionTitle">Painel executivo</h2></div>
+        </div>
+        <div class="topbar-right">
+          <span class="period-pill">Diagnóstico pós-aula</span>
+          <button id="refreshDashboardBtn" class="btn btn-secondary">Atualizar</button>
+          <button id="adminLogoutBtn" class="user-btn" title="Sair"><span>CT</span><i></i></button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section id="section-overview" class="admin-section active">
+          <div class="page-head">
+            <div><span class="eyebrow">REDE DE ENSINO</span><h3>Visão municipal</h3><p>Indicadores consolidados para acompanhar alcance, participação e compreensão dos temas trabalhados.</p></div>
+            <div class="update-meta"><span>Última atualização</span><strong id="lastUpdated">—</strong></div>
+          </div>
+
+          <div class="filters-bar">
+            <label><span>Escola</span><select id="filterSchool"><option value="">Todas as escolas</option></select></label>
+            <label><span>Nível</span><select id="filterLevel"><option value="">Todos os níveis</option></select></label>
+            <label><span>Série</span><select id="filterGrade"><option value="">Todas as séries</option></select></label>
+            <label><span>Turma</span><select id="filterClass"><option value="">Todas as turmas</option></select></label>
+            <button id="clearFiltersBtn" class="btn btn-ghost">Limpar</button>
+          </div>
+
+          <div class="kpi-grid kpi-grid-6">
+            <article class="kpi-card"><span>Escolas alcançadas</span><strong id="kpiSchools">0</strong><small>unidades com cadastro</small></article>
+            <article class="kpi-card"><span>Turmas</span><strong id="kpiClasses">0</strong><small>turmas no recorte</small></article>
+            <article class="kpi-card"><span>Alunos cadastrados</span><strong id="kpiParticipants">0</strong><small>códigos vinculados</small></article>
+            <article class="kpi-card"><span>Concluíram</span><strong id="kpiCompleted">0</strong><small>diagnósticos enviados</small></article>
+            <article class="kpi-card"><span>Participação</span><strong id="kpiParticipation">0%</strong><small>conclusão do recorte</small></article>
+            <article class="kpi-card kpi-accent"><span>Média geral</span><strong id="kpiAverage">0%</strong><small>acertos no diagnóstico</small></article>
+          </div>
+
+          <div class="dashboard-grid dashboard-grid-main">
+            <article class="panel panel-span-8"><div class="panel-head"><div><span class="eyebrow">APRENDIZAGEM</span><h4>Desempenho por eixo</h4></div><span class="panel-note">média de acertos</span></div><div class="chart-box chart-xl"><canvas id="chartThemes"></canvas></div></article>
+            <article class="panel panel-span-4"><div class="panel-head"><div><span class="eyebrow">PARTICIPAÇÃO</span><h4>Faixas de desempenho</h4></div></div><div class="chart-box chart-xl"><canvas id="chartDistribution"></canvas></div></article>
+            <article class="panel panel-span-7"><div class="panel-head"><div><span class="eyebrow">EVOLUÇÃO DA APLICAÇÃO</span><h4>Conclusões por dia</h4></div><span class="panel-note">volume diário</span></div><div class="chart-box chart-lg"><canvas id="chartTimeline"></canvas></div></article>
+            <article class="panel panel-span-5"><div class="panel-head"><div><span class="eyebrow">SÉRIES</span><h4>Média por série</h4></div></div><div class="chart-box chart-lg"><canvas id="chartGrades"></canvas></div></article>
+          </div>
+
+          <div class="insights-row">
+            <article><span class="insight-index">01</span><div><small>MAIOR DIFICULDADE</small><strong id="insightHardest">—</strong><p id="insightHardestText">Aguardando dados.</p></div></article>
+            <article><span class="insight-index">02</span><div><small>MELHOR EIXO</small><strong id="insightBestTheme">—</strong><p id="insightBestThemeText">Aguardando dados.</p></div></article>
+            <article><span class="insight-index">03</span><div><small>COBERTURA</small><strong id="insightCoverage">—</strong><p>Unidades e turmas alcançadas pelo projeto.</p></div></article>
+          </div>
+        </section>
+
+        <section id="section-coverage" class="admin-section">
+          <div class="page-head"><div><span class="eyebrow">COBERTURA TERRITORIAL</span><h3>Mapa das escolas</h3><p>Visualize onde o projeto já possui alunos cadastrados e compare participação por unidade.</p></div><span class="info-badge">Mapa usa OpenStreetMap</span></div>
+          <div class="coverage-layout">
+            <article class="panel map-panel"><div class="panel-head"><div><span class="eyebrow">MAPA</span><h4>Cobertura da rede</h4></div><span id="mapCoverageLabel" class="panel-note">0 unidades</span></div><div id="schoolsMap" class="schools-map"></div><div id="mapEmpty" class="map-empty hidden">Cadastre latitude e longitude das escolas para exibir o mapa.</div></article>
+            <article class="panel coverage-summary"><div class="panel-head"><div><span class="eyebrow">RESUMO</span><h4>Cobertura atual</h4></div></div><div id="coverageSummary" class="metric-list"></div></article>
+          </div>
+          <div class="section-subhead"><div><span class="eyebrow">UNIDADES</span><h4>Escolas participantes</h4></div></div>
+          <div id="schoolsGrid" class="school-cards"></div>
+        </section>
+
+        <section id="section-comparison" class="admin-section">
+          <div class="page-head"><div><span class="eyebrow">COMPARAÇÃO ENTRE UNIDADES</span><h3>Escola por escola</h3><p>Compare médias e participação sem misturar os resultados individuais dos estudantes.</p></div></div>
+          <div class="dashboard-grid">
+            <article class="panel panel-span-7"><div class="panel-head"><div><span class="eyebrow">DESEMPENHO</span><h4>Média geral por escola</h4></div><span class="panel-note">percentual de acertos</span></div><div class="chart-box chart-xxl"><canvas id="chartSchoolAverage"></canvas></div></article>
+            <article class="panel panel-span-5"><div class="panel-head"><div><span class="eyebrow">ADESÃO</span><h4>Participação por escola</h4></div><span class="panel-note">diagnósticos concluídos</span></div><div class="chart-box chart-xxl"><canvas id="chartSchoolParticipation"></canvas></div></article>
+          </div>
+          <div class="table-panel"><div class="table-toolbar"><div><span class="eyebrow">QUADRO COMPARATIVO</span><strong>Indicadores por unidade</strong></div></div><div class="table-wrap"><table><thead><tr><th>Escola</th><th>Alunos</th><th>Concluíram</th><th>Participação</th><th>Média</th><th>Turmas</th><th>Principal atenção</th></tr></thead><tbody id="comparisonTableBody"></tbody></table></div></div>
+        </section>
+
+
+        <section id="section-data" class="admin-section">
+          <div class="page-head">
+            <div><span class="eyebrow">DADOS DA REDE</span><h3>Importação em lote</h3><p>Importe escolas e alunos por Excel ou CSV, valide tudo antes de gravar e gere os códigos individuais sem digitação manual.</p></div>
+            <span class="security-badge">Pré-validação obrigatória</span>
+          </div>
+
+          <div class="import-layout">
+            <article class="panel import-card">
+              <div class="panel-head"><div><span class="eyebrow">1. ARQUIVO</span><h4>Preparar importação</h4></div><span id="importFileBadge" class="panel-note">Nenhum arquivo</span></div>
+              <div class="form-grid form-grid-2">
+                <label class="field"><span>Tipo de importação</span><select id="importType"><option value="students">Alunos</option><option value="schools">Escolas</option></select></label>
+                <label class="field"><span>Arquivo</span><input id="importFile" type="file" accept=".xlsx,.xls,.csv"></label>
+                <label id="importDefaultExpiryField" class="field"><span>Validade padrão dos códigos</span><input id="importDefaultExpiry" type="date"></label>
+                <label id="importGenerateCodesField" class="toggle-field"><input id="importGenerateCodes" type="checkbox" checked><span><strong>Gerar códigos após importar</strong><small>Recomendado para liberar o app do aluno imediatamente.</small></span></label>
+              </div>
+              <div class="template-row">
+                <span>Modelo:</span>
+                <button id="downloadImportTemplateXlsx" class="btn btn-secondary">Baixar XLSX</button>
+                <button id="downloadImportTemplateCsv" class="btn btn-ghost">Baixar CSV</button>
+              </div>
+              <div id="importDropzone" class="import-dropzone" tabindex="0">
+                <span class="upload-symbol">⇧</span>
+                <strong>Arraste a planilha aqui</strong>
+                <p>ou selecione o arquivo acima. A primeira aba será analisada.</p>
+                <small>XLSX, XLS ou CSV</small>
+              </div>
+              <div class="form-actions"><button id="validateImportBtn" class="btn btn-primary">Validar planilha</button><button id="clearImportBtn" class="btn btn-secondary">Limpar</button></div>
+              <p id="importMessage" class="form-message"></p>
+            </article>
+
+            <article class="panel import-guide">
+              <span class="eyebrow">PADRÃO DE DADOS</span>
+              <h4 id="importGuideTitle">Planilha de alunos</h4>
+              <div id="importGuideColumns" class="column-tags"></div>
+              <div class="callout"><strong>Sem surpresas</strong><p>O sistema não grava nada na etapa de validação. Linhas com erro ficam bloqueadas até a correção da planilha.</p></div>
+              <div class="callout callout-neutral"><strong>Duplicidades</strong><p>Matrícula, quando disponível, é a melhor referência. Sem matrícula, o sistema confere nome + escola + nível + série + turma.</p></div>
+            </article>
+          </div>
+
+          <article id="importPreviewPanel" class="panel import-preview hidden">
+            <div class="panel-head">
+              <div><span class="eyebrow">2. PRÉ-VISUALIZAÇÃO</span><h4>Conferência antes de importar</h4></div>
+              <div class="import-summary">
+                <span><strong id="importTotal">0</strong>Total</span>
+                <span class="summary-ok"><strong id="importValid">0</strong>Válidas</span>
+                <span class="summary-warning"><strong id="importWarnings">0</strong>Avisos</span>
+                <span class="summary-error"><strong id="importErrors">0</strong>Erros</span>
+              </div>
+            </div>
+            <div class="table-wrap import-table-wrap"><table><thead id="importPreviewHead"></thead><tbody id="importPreviewBody"></tbody></table></div>
+            <div class="import-confirm-row"><div><strong id="importReadyTitle">Aguardando validação</strong><p id="importReadyText">Corrija as linhas com erro antes de continuar.</p></div><button id="commitImportBtn" class="btn btn-primary" disabled>Importar registros</button></div>
+          </article>
+
+          <article id="importGeneratedPanel" class="panel generated-panel hidden">
+            <div class="panel-head"><div><span class="eyebrow">3. CÓDIGOS GERADOS</span><h4>Salve a lista agora</h4></div><div class="panel-actions"><button id="downloadImportCodesBtn" class="btn btn-primary">Baixar CSV</button><button id="goToCodesBtn" class="btn btn-secondary">Abrir gestão de códigos</button></div></div>
+            <p class="panel-intro">Por segurança, os códigos completos são exibidos apenas nesta geração. O banco guarda somente hash e referência mascarada.</p>
+            <div class="table-wrap"><table><thead><tr><th>Aluno</th><th>Escola</th><th>Série</th><th>Turma</th><th>Código</th><th>Validade</th></tr></thead><tbody id="importGeneratedBody"></tbody></table></div>
+          </article>
+
+          <article class="panel import-history-panel">
+            <div class="panel-head"><div><span class="eyebrow">AUDITORIA</span><h4>Últimas importações</h4></div><span class="panel-note">registro administrativo</span></div>
+            <div class="table-wrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Arquivo</th><th>Linhas</th><th>Incluídos</th><th>Atualizados</th><th>Ignorados</th><th>Códigos</th></tr></thead><tbody id="importHistoryBody"></tbody></table></div>
+          </article>
+        </section>
+
+        <section id="section-codes" class="admin-section">
+          <div class="page-head"><div><span class="eyebrow">CÓDIGOS INDIVIDUAIS</span><h3>Gerar e administrar acessos</h3><p>Crie códigos em lote para uma turma. O código completo é exibido somente no momento da geração.</p></div><span class="security-badge">Código armazenado como hash</span></div>
+
+          <div class="code-layout">
+            <article class="panel code-generator">
+              <div class="panel-head"><div><span class="eyebrow">NOVA TURMA</span><h4>Gerador de códigos</h4></div></div>
+              <div class="form-grid form-grid-2">
+                <label class="field"><span>Escola</span><select id="codeSchool"><option value="">Selecione</option></select></label>
+                <label class="field"><span>Nível</span><select id="codeLevel"><option value="">Selecione</option><option value="fundamental2">Fundamental II</option><option value="medio">Ensino Médio</option></select></label>
+                <label class="field"><span>Série</span><input id="codeGrade" placeholder="Ex.: 8º ano"></label>
+                <label class="field"><span>Turma</span><input id="codeClass" maxlength="10" placeholder="Ex.: A"></label>
+                <label class="field field-span-2"><span>Validade do código</span><input id="codeExpires" type="date"></label>
+                <label class="field field-span-2"><span>Nomes dos alunos — um por linha</span><textarea id="codeStudentNames" rows="10" placeholder="Ana Souza\nBruno Lima\nCarla Santos"></textarea></label>
+              </div>
+              <div class="form-actions"><button id="generateCodesBtn" class="btn btn-primary">Gerar códigos da turma</button><button id="clearCodeFormBtn" class="btn btn-secondary">Limpar</button></div>
+              <p id="codeGeneratorMessage" class="form-message"></p>
+            </article>
+
+            <article class="panel code-help">
+              <span class="eyebrow">FLUXO RECOMENDADO</span>
+              <h4>Um link. Um código por aluno.</h4>
+              <ol class="steps-list"><li><span>1</span><p>Envie o mesmo link do app ao grupo de WhatsApp da turma.</p></li><li><span>2</span><p>Entregue o código individual a cada estudante.</p></li><li><span>3</span><p>O app preenche nome, escola, série e turma para conferência.</p></li><li><span>4</span><p>Após o envio, o painel recebe o diagnóstico automaticamente.</p></li></ol>
+              <div class="callout"><strong>Segurança</strong><p>Se um código for perdido, revogue e gere outro. O banco não precisa guardar o código em texto puro.</p></div>
+            </article>
+          </div>
+
+          <article id="generatedBatchPanel" class="panel generated-panel hidden">
+            <div class="panel-head"><div><span class="eyebrow">LOTE GERADO</span><h4>Códigos prontos para distribuição</h4></div><div class="panel-actions"><button id="copyGeneratedCodesBtn" class="btn btn-secondary">Copiar lista</button><button id="downloadGeneratedCodesBtn" class="btn btn-primary">Baixar CSV</button></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Aluno</th><th>Escola</th><th>Série</th><th>Turma</th><th>Código</th><th>Validade</th></tr></thead><tbody id="generatedCodesBody"></tbody></table></div>
+          </article>
+
+          <article class="panel codes-manager-panel">
+            <div class="panel-head"><div><span class="eyebrow">ADMINISTRAÇÃO</span><h4>Códigos cadastrados</h4></div><div class="panel-actions"><input id="codeSearch" class="compact-input" placeholder="Buscar aluno ou escola"><select id="codeStatusFilter" class="compact-input"><option value="">Todos os status</option><option value="available">Disponível</option><option value="redeemed">Ativado</option><option value="used">Utilizado</option><option value="expired">Expirado</option><option value="revoked">Revogado</option></select></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Aluno</th><th>Escola</th><th>Série/Turma</th><th>Código</th><th>Status</th><th>Validade</th><th>Ações</th></tr></thead><tbody id="codesTableBody"></tbody></table></div>
+          </article>
+        </section>
+
+        <section id="section-diagnostics" class="admin-section">
+          <div class="page-head"><div><span class="eyebrow">DIAGNÓSTICOS</span><h3>Onde a aprendizagem precisa de reforço</h3><p>Analise os conceitos que apresentaram maior dificuldade após a aula.</p></div></div>
+          <div class="dashboard-grid">
+            <article class="panel panel-span-7"><div class="panel-head"><div><span class="eyebrow">QUESTÕES</span><h4>Maiores percentuais de erro</h4></div></div><div class="chart-box chart-xxl"><canvas id="chartQuestionsDiagnostics"></canvas></div></article>
+            <article class="panel panel-span-5"><div class="panel-head"><div><span class="eyebrow">EIXOS</span><h4>Perfil de compreensão</h4></div></div><div class="chart-box chart-xxl"><canvas id="chartThemeRadar"></canvas></div></article>
+          </div>
+          <div id="diagnosticInsights" class="diagnostic-cards"></div>
+        </section>
+
+        <section id="section-results" class="admin-section">
+          <div class="page-head"><div><span class="eyebrow">RESULTADOS INDIVIDUAIS</span><h3>Consulta administrativa</h3><p>Área protegida. O app do estudante não exibe estes dados.</p></div><button id="exportCsvBtn" class="btn btn-primary">Exportar CSV</button></div>
+          <div class="filters-bar">
+            <label><span>Escola</span><select id="resultFilterSchool"><option value="">Todas as escolas</option></select></label>
+            <label><span>Nível</span><select id="resultFilterLevel"><option value="">Todos os níveis</option></select></label>
+            <label><span>Série</span><select id="resultFilterGrade"><option value="">Todas as séries</option></select></label>
+            <label><span>Turma</span><select id="resultFilterClass"><option value="">Todas as turmas</option></select></label>
+          </div>
+          <div class="table-panel"><div class="table-wrap"><table><thead><tr><th>Aluno</th><th>Escola</th><th>Nível</th><th>Série</th><th>Turma</th><th>Acertos</th><th>Resultado</th><th>Data</th></tr></thead><tbody id="resultsTableBody"></tbody></table></div></div>
+        </section>
+
+        <section id="section-reports" class="admin-section">
+          <div class="page-head"><div><span class="eyebrow">RELATÓRIOS</span><h3>Consolidação para gestão</h3><p>Exporte bases por escola ou por recorte e prepare relatórios institucionais.</p></div></div>
+          <div class="report-grid">
+            <article><span>01</span><h4>Base geral</h4><p>Resultados consolidados do recorte selecionado.</p><button id="reportCsvBtn" class="btn btn-secondary">Exportar CSV</button></article>
+            <article><span>02</span><h4>Códigos da turma</h4><p>Gere um lote e baixe o arquivo para distribuição.</p><button class="btn btn-secondary" data-section-link="codes">Abrir códigos</button></article>
+            <article><span>03</span><h4>Comparativo de escolas</h4><p>Visualize os indicadores lado a lado para reuniões de gestão.</p><button class="btn btn-secondary" data-section-link="comparison">Comparar unidades</button></article>
+            <article><span>04</span><h4>Relatório analítico</h4><p>Estrutura preparada para PDF automático em uma próxima evolução.</p><button class="btn btn-disabled" disabled>Em evolução</button></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-card"><span class="eyebrow">CONFIRMAÇÃO</span><h3 id="confirmModalTitle">Confirmar ação</h3><p id="confirmModalText">—</p><div class="modal-actions"><button id="confirmModalCancel" class="btn btn-secondary">Cancelar</button><button id="confirmModalOk" class="btn btn-danger">Confirmar</button></div></div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

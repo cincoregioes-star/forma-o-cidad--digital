@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081523">
+  <meta name="description" content="Aplicativo do estudante — Projeto Formação Cidadã Digital.">
+  <title>Formação Cidadã | App do Estudante</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/student.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0"></script>
+  <script defer src="assets/js/config.js"></script>
+  <script defer src="assets/js/content.js"></script>
+  <script defer src="assets/js/demo-data.js"></script>
+  <script defer src="assets/js/student.js"></script>
+</head>
+<body>
+  <noscript>Ative o JavaScript para utilizar este aplicativo.</noscript>
+  <div class="student-app">
+    <header class="student-header">
+      <div class="student-brand"><span class="brand-mark">FC</span><div><strong>Formação Cidadã</strong><small>App do estudante</small></div></div>
+      <span id="studentHeaderStatus" class="header-status">Acesso seguro</span>
+    </header>
+
+    <main>
+      <section id="screen-access" class="student-screen active">
+        <div class="access-hero">
+          <span class="eyebrow">PROJETO FORMAÇÃO CIDADÃ</span>
+          <h1>Continue a aula no seu celular.</h1>
+          <p>Digite o código individual enviado pela escola. Seus dados serão preenchidos automaticamente para conferência.</p>
+        </div>
+        <div class="access-card">
+          <label class="field"><span>Código de acesso</span><input id="studentCode" maxlength="24" autocomplete="one-time-code" placeholder="Ex.: FCD-8A-001"></label>
+          <button id="validateCodeBtn" class="btn btn-primary btn-block">Validar código</button>
+          <p id="codeMessage" class="form-message"></p>
+        </div>
+        <div class="privacy-note"><span>✓</span><p>Seu código abre apenas o seu cadastro. O aplicativo não exibe lista de alunos, notas de colegas ou dashboard administrativo.</p></div>
+      </section>
+
+      <section id="screen-confirm" class="student-screen">
+        <div class="screen-heading"><span class="eyebrow">CONFIRA SEUS DADOS</span><h2>É você?</h2><p>Antes de começar, confira as informações enviadas pela escola.</p></div>
+        <div class="identity-card">
+          <div class="identity-avatar" id="identityInitials">FC</div>
+          <div class="identity-name"><span>Estudante</span><strong id="confirmName">—</strong></div>
+          <div class="identity-grid">
+            <div><span>Escola</span><strong id="confirmSchool">—</strong></div>
+            <div><span>Série</span><strong id="confirmGrade">—</strong></div>
+            <div><span>Turma</span><strong id="confirmClass">—</strong></div>
+            <div><span>Nível</span><strong id="confirmLevel">—</strong></div>
+          </div>
+        </div>
+        <label class="check-card"><input type="checkbox" id="confirmCheck"><span><strong>Confirmo meus dados</strong><small>As informações acima correspondem ao meu cadastro.</small></span></label>
+        <button id="continueStudentBtn" class="btn btn-primary btn-block" disabled>Começar aula digital</button>
+      </section>
+
+      <section id="screen-lesson" class="student-screen lesson-screen">
+        <div class="lesson-top">
+          <button id="exitLessonBtn" class="icon-btn" aria-label="Voltar">←</button>
+          <div class="lesson-progress"><span id="lessonCounter">Trecho 1 de 8</span><div><i id="lessonProgressBar"></i></div></div>
+        </div>
+        <article id="lessonContent" class="lesson-content"></article>
+        <div class="lesson-actions">
+          <button id="prevLessonBtn" class="btn btn-secondary">Anterior</button>
+          <button id="nextLessonBtn" class="btn btn-primary">Próximo</button>
+          <button id="startQuizBtn" class="btn btn-primary hidden">Iniciar diagnóstico</button>
+        </div>
+      </section>
+
+      <section id="screen-quiz" class="student-screen quiz-screen">
+        <div class="quiz-top">
+          <span class="eyebrow">DIAGNÓSTICO PÓS-AULA</span>
+          <div class="quiz-progress-row"><strong id="quizTitle">Questão 1 de 15</strong><span id="quizProgressText">7%</span></div>
+          <div class="quiz-progress"><i id="quizProgressBar"></i></div>
+        </div>
+        <article id="quizQuestion" class="quiz-card"></article>
+        <div class="quiz-actions">
+          <button id="prevQuestionBtn" class="btn btn-secondary">Voltar</button>
+          <button id="nextQuestionBtn" class="btn btn-primary">Avançar</button>
+          <button id="finishQuizBtn" class="btn btn-primary hidden">Enviar respostas</button>
+        </div>
+      </section>
+
+      <section id="screen-result" class="student-screen result-screen">
+        <div class="success-ring">✓</div>
+        <span class="eyebrow">CONCLUÍDO</span>
+        <h2>Respostas enviadas.</h2>
+        <p>Obrigado por participar do Projeto Formação Cidadã. O diagnóstico será analisado pela equipe responsável.</p>
+        <div class="result-note"><strong>Importante</strong><span>Esta atividade tem finalidade diagnóstica e não substitui avaliação escolar.</span></div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

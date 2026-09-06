@@ -1,0 +1,10 @@
+{
+  "name": "Formação Cidadã — App do Estudante",
+  "short_name": "Formação Cidadã",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#081523",
+  "theme_color": "#081523",
+  "description": "Aula digital e diagnóstico do Projeto Formação Cidadã."
+}

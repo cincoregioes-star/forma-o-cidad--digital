@@ -1,0 +1,17 @@
+[functions.redeem-code]
+verify_jwt = true
+
+[functions.start-diagnostic]
+verify_jwt = true
+
+[functions.submit-diagnostic]
+verify_jwt = true
+
+[functions.admin-dashboard]
+verify_jwt = true
+
+[functions.admin-codes]
+verify_jwt = true
+
+[functions.admin-import]
+verify_jwt = true

@@ -1,6 +1,6 @@
 window.APP_CONFIG = {
   appName: 'NEXO Público',
-  version: '1.6.0',
+  version: '1.7.0',
   demoMode: true,
   supabase: {
     url: 'COLE_AQUI_SUA_SUPABASE_URL',
@@ -12,7 +12,8 @@ window.APP_CONFIG = {
     submitDiagnostic: 'submit-diagnostic',
     adminDashboard: 'admin-dashboard',
     adminCodes: 'admin-codes',
-    adminImport: 'admin-import'
+    adminImport: 'admin-import',
+    nexoAgent: 'nexo-agent'
   },
   quiz: {
     questionsPerAttempt: 15,
@@ -45,6 +46,7 @@ window.APP_CONFIG = {
   addCss('assets/css/decision.css');
   addCss('assets/css/decision-v15.css');
   addCss('assets/css/agents.css');
+  addCss('assets/css/nexo-v17.css');
 
   const email = document.getElementById('adminEmail');
   const password = document.getElementById('adminPassword');
@@ -76,12 +78,8 @@ window.APP_CONFIG = {
     if (label) label.textContent = 'Tomada de Decisão';
   }
 
-  document.querySelectorAll('.sidebar-brand strong').forEach(el => el.textContent = 'NEXO Público');
-  document.querySelectorAll('.sidebar-brand small').forEach(el => el.textContent = 'Plataforma de Gestão');
-  document.querySelectorAll('.brand-lockup span:last-child').forEach(el => el.textContent = 'NEXO Público');
-  document.title = 'NEXO Público | Plataforma de Gestão';
   document.querySelectorAll('.sidebar-footer small').forEach(el => {
-    if (el.textContent.includes('Plataforma')) el.textContent = 'v1.6 • Plataforma de Gestão';
+    el.textContent = 'v1.7 • NEXO Público';
   });
 
   const diagnosticSection = document.getElementById('section-diagnostics');
@@ -168,6 +166,7 @@ window.APP_CONFIG = {
   }
 
   addScript('assets/js/decision.js');
-  addScript('assets/js/agents.js');
   addScript('assets/js/decision-v15.js');
+  addScript('assets/js/agents.js');
+  addScript('assets/js/nexo-v17.js');
 })();

@@ -1,6 +1,6 @@
 window.APP_CONFIG = {
   appName: 'Projeto Formação Cidadã Digital',
-  version: '1.4.0',
+  version: '1.5.0',
   demoMode: true,
   supabase: {
     url: 'COLE_AQUI_SUA_SUPABASE_URL',
@@ -43,6 +43,7 @@ window.APP_CONFIG = {
   };
 
   addCss('assets/css/decision.css');
+  addCss('assets/css/decision-v15.css');
 
   const email = document.getElementById('adminEmail');
   const password = document.getElementById('adminPassword');
@@ -75,7 +76,7 @@ window.APP_CONFIG = {
   }
 
   document.querySelectorAll('.sidebar-footer small').forEach(el => {
-    if (el.textContent.includes('Plataforma')) el.textContent = 'v1.4 • Plataforma de Gestão';
+    if (el.textContent.includes('Plataforma')) el.textContent = 'v1.5 • Plataforma de Gestão';
   });
 
   const diagnosticSection = document.getElementById('section-diagnostics');
@@ -134,7 +135,7 @@ window.APP_CONFIG = {
       </details>
 
       <details class="decision-block">
-        <summary><span><b>04</b><span><strong>Matriz para decisão</strong><small>Da informação à prioridade, ação, responsável e prazo.</small></span></span><i>⌄</i></summary>
+        <summary><span><b>06</b><span><strong>Matriz para decisão</strong><small>Da informação à prioridade, ação, responsável e prazo.</small></span></span><i>⌄</i></summary>
         <div class="decision-block-body">
           <div class="decision-flow">
             <article><span>1</span><strong>Sinal</strong><p>O dado mostra uma diferença, risco, demanda ou oportunidade.</p></article>
@@ -151,7 +152,7 @@ window.APP_CONFIG = {
       </details>
 
       <details class="decision-block">
-        <summary><span><b>05</b><span><strong>Governança e proteção dos dados</strong><small>Dados úteis sem transformar o BI em cadastro invasivo.</small></span></span><i>⌄</i></summary>
+        <summary><span><b>07</b><span><strong>Governança e proteção dos dados</strong><small>Dados úteis sem transformar o BI em cadastro invasivo.</small></span></span><i>⌄</i></summary>
         <div class="decision-block-body decision-governance">
           <article><strong>Menores de idade</strong><p>Priorizar perguntas educacionais e de percepção adequadas ao contexto escolar. Temas sensíveis devem usar protocolos próprios e profissionais responsáveis.</p></article>
           <article><strong>Dados pessoais mínimos</strong><p>O painel deve preferir indicadores agregados. Dados sensíveis só entram quando houver finalidade, base adequada e proteção correspondente.</p></article>
@@ -162,4 +163,5 @@ window.APP_CONFIG = {
   }
 
   addScript('assets/js/decision.js');
+  addScript('assets/js/decision-v15.js');
 })();

@@ -25,17 +25,62 @@
     const {data:signed,error}=await state.supabase.auth.signInAnonymously();if(error)throw error;return signed.session;
   }
 
+  function loadStudent(student){
+    state.student=student;
+    state.levelKey=student.levelKey||(String(student.level).includes('Médio')?'medio':'fundamental2');
+    state.lessonIndex=0;
+    $('#confirmName').textContent=student.name;
+    $('#confirmSchool').textContent=student.school;
+    $('#confirmGrade').textContent=student.grade;
+    $('#confirmClass').textContent=student.className;
+    $('#confirmLevel').textContent=student.level;
+    $('#identityInitials').textContent=initials(student.name);
+    $('#confirmCheck').checked=false;
+    $('#continueStudentBtn').disabled=true;
+    $('#studentHeaderStatus').textContent=student.grade;
+    showScreen('confirm');
+  }
+
+  function enterTestMode(levelKey){
+    if(!cfg.demoMode)return;
+    const student=levelKey==='medio'
+      ? {id:'demo-test-medio',name:'Estudante de Teste',school:'Escola de Demonstração',level:'Ensino Médio',levelKey:'medio',grade:'1ª série EM',className:'Teste'}
+      : {id:'demo-test-fund2',name:'Estudante de Teste',school:'Escola de Demonstração',level:'Fundamental II',levelKey:'fundamental2',grade:'8º ano',className:'Teste'};
+    loadStudent(student);
+    showToast('Modo de teste ativado. Nenhum dado será enviado ao Supabase.');
+  }
+
+  function injectTestMode(){
+    if(!cfg.demoMode||$('#demoTestAccess'))return;
+    const card=$('.access-card');
+    if(!card)return;
+    const box=document.createElement('div');
+    box.id='demoTestAccess';
+    box.style.cssText='margin-top:18px;padding-top:18px;border-top:1px solid rgba(154,178,207,.16)';
+    box.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+        <div><strong style="display:block;font-size:14px">Modo de teste</strong><small style="display:block;margin-top:4px;color:#8298ad;line-height:1.4">Teste a aula e o diagnóstico sem código e sem Supabase.</small></div>
+        <span style="font-size:10px;font-weight:800;padding:5px 8px;border-radius:999px;border:1px solid rgba(125,211,252,.18);color:#8edcff;background:rgba(125,211,252,.07)">DEMO</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button id="testFund2Btn" type="button" class="btn btn-secondary">Testar Fundamental II</button>
+        <button id="testMedioBtn" type="button" class="btn btn-secondary">Testar Ensino Médio</button>
+      </div>`;
+    card.appendChild(box);
+    $('#testFund2Btn')?.addEventListener('click',()=>enterTestMode('fundamental2'));
+    $('#testMedioBtn')?.addEventListener('click',()=>enterTestMode('medio'));
+  }
+
   async function validateCode(){
     const code=$('#studentCode').value.trim().toUpperCase();const msg=$('#codeMessage');
     if(!code)return setMessage(msg,'Digite o código recebido da escola.','error');
     $('#validateCodeBtn').disabled=true;setMessage(msg,'Validando código...');
     try{
       let student;
-      if(cfg.demoMode){await new Promise(r=>setTimeout(r,280));student=window.DEMO_STUDENTS[code];if(!student)throw new Error('Código não localizado. Confira e tente novamente.');}
+      if(cfg.demoMode){await new Promise(r=>setTimeout(r,280));student=window.DEMO_STUDENTS[code];if(!student)throw new Error('Código não localizado. Use um código de demonstração ou o Modo de teste abaixo.');}
       else{await ensureAnonymousSession();const {data,error}=await state.supabase.functions.invoke(cfg.functions.redeemCode,{body:{code}});if(error)throw error;if(!data?.student)throw new Error(data?.message||'Código inválido ou já utilizado.');student=data.student;}
-      state.student=student;state.levelKey=student.levelKey||(String(student.level).includes('Médio')?'medio':'fundamental2');state.lessonIndex=0;
-      $('#confirmName').textContent=student.name;$('#confirmSchool').textContent=student.school;$('#confirmGrade').textContent=student.grade;$('#confirmClass').textContent=student.className;$('#confirmLevel').textContent=student.level;$('#identityInitials').textContent=initials(student.name);$('#confirmCheck').checked=false;$('#continueStudentBtn').disabled=true;$('#studentHeaderStatus').textContent=student.grade;
-      setMessage(msg,'','success');showScreen('confirm');
+      loadStudent(student);
+      setMessage(msg,'','success');
     }catch(err){setMessage(msg,err.message||'Não foi possível validar o código.','error')}
     finally{$('#validateCodeBtn').disabled=false}
   }
@@ -121,7 +166,7 @@
     $('#nextQuestionBtn').addEventListener('click',()=>{const q=state.questions[state.questionIndex];if(state.answers[q.id]===undefined)return showToast('Marque uma alternativa antes de avançar.');if(state.questionIndex<state.questions.length-1){state.questionIndex++;renderQuestion()}});
     $('#finishQuizBtn').addEventListener('click',finishDiagnostic);window.addEventListener('online',retryPending);
   }
-  function registerServiceWorker(){if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})}
-  function init(){initSupabase();bind();registerServiceWorker();retryPending()}
+  function registerServiceWorker(){if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{})}
+  function init(){initSupabase();bind();injectTestMode();registerServiceWorker();retryPending()}
   window.addEventListener('load',init);
 })();

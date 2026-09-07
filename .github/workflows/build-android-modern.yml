@@ -1,0 +1,78 @@
+name: Build Android Modern
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'android-modern/**'
+      - 'app.html'
+      - 'manifest.webmanifest'
+      - 'assets/css/student.css'
+      - 'assets/js/config.js'
+      - 'assets/js/content.js'
+      - 'assets/js/demo-data.js'
+      - 'assets/js/student.js'
+      - '.github/workflows/build-android-modern.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Prepare bundled web app
+        run: |
+          mkdir -p android-modern/app/src/main/assets/www/assets/css
+          mkdir -p android-modern/app/src/main/assets/www/assets/js
+          cp app.html android-modern/app/src/main/assets/www/app.html
+          cp manifest.webmanifest android-modern/app/src/main/assets/www/manifest.webmanifest
+          cp assets/css/student.css android-modern/app/src/main/assets/www/assets/css/student.css
+          cp assets/js/config.js android-modern/app/src/main/assets/www/assets/js/config.js
+          cp assets/js/content.js android-modern/app/src/main/assets/www/assets/js/content.js
+          cp assets/js/demo-data.js android-modern/app/src/main/assets/www/assets/js/demo-data.js
+          cp assets/js/student.js android-modern/app/src/main/assets/www/assets/js/student.js
+
+      - name: Build release APK
+        run: gradle -p android-modern --no-daemon assembleRelease
+
+      - name: Verify resources alignment and package
+        run: |
+          APK=android-modern/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -f "$APK"
+          unzip -t "$APK" >/dev/null
+          python3 - <<'PY'
+          import zipfile,struct
+          p='android-modern/app/build/outputs/apk/release/app-release-unsigned.apk'
+          z=zipfile.ZipFile(p)
+          info=z.getinfo('resources.arsc')
+          if info.compress_type != zipfile.ZIP_STORED:
+              raise SystemExit('resources.arsc is compressed')
+          with open(p,'rb') as f:
+              f.seek(info.header_offset)
+              h=f.read(30)
+              n,e=struct.unpack('<HH',h[26:30])
+              data_offset=info.header_offset+30+n+e
+          print('resources.arsc offset:', data_offset, 'mod4=', data_offset%4)
+          if data_offset % 4:
+              raise SystemExit('resources.arsc is not 4-byte aligned')
+          PY
+
+      - name: Upload unsigned release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: formacao-cidada-modern-unsigned
+          path: android-modern/app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
